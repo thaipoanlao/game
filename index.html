@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Animal Bubble Pop v0.1.6</title>
+    <title>Animal Bubble Pop v0.1.7</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#87CEFA">
@@ -16,7 +16,8 @@
     <style>
         body { 
             margin: 0; overflow: hidden; touch-action: none; user-select: none;
-            font-family: 'Arial', sans-serif; background-color: #87CEFA;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* ฟอนต์ระบบ */
+            background-color: #87CEFA;
             background-position: center; background-repeat: no-repeat; background-size: cover;
             transition: background-image 1.2s ease-in-out; 
         }
@@ -71,13 +72,13 @@
 <body>
     <div id="start-screen">
         <button id="start-btn">เริ่มเกม<br><span>Start Game</span></button>
-        <div class="version-tag">v 0.1.6</div>
+        <div class="version-tag">v 0.1.7</div>
     </div>
 
     <div id="ui-left"><span id="scoreText">สัตว์ที่เจอ</span>: <span id="scoreDisplay">0</span></div>
     <div id="ui-right"><button id="lang-btn">TH / EN</button></div>
     <div id="hint">จิ้มเพื่อเริ่มสนุก!</div>
-    <div class="version-tag">v 0.1.6</div>
+    <div class="version-tag">v 0.1.7</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -102,58 +103,31 @@
         let particles = [];
         let isGameRunning = false;
         
-        // --- อัปเกรดระบบเสียงด้วย Web Audio API ---
         let bgmPlayer = new Audio();
         bgmPlayer.loop = true;
-        bgmPlayer.crossOrigin = "anonymous"; // ป้องกันปัญหาเวลาดึงไฟล์
+        bgmPlayer.crossOrigin = "anonymous";
         
         let audioCtx;
         let gainNode;
 
         function setupWebAudio() {
             if (!audioCtx) {
-                // สร้างระบบเสียงขั้นสูง
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const track = audioCtx.createMediaElementSource(bgmPlayer);
                 gainNode = audioCtx.createGain();
-                
-                // บังคับระดับเสียงตรงนี้ (0.25 = 25%) 
                 gainNode.gain.value = 0.25; 
-                
-                // เชื่อมต่อสายเสียงเข้าด้วยกัน
                 track.connect(gainNode).connect(audioCtx.destination);
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         }
-        // ------------------------------------------
 
         const stages = [
-            { 
-                nameTh: "ฟาร์มแสนสนุก 🐄", nameEn: "Happy Farm 🐄", filename: "bg/farm-bg.jpg", music: "music/farm.mp3",
-                animals: [{i:'🐮', th:'วัว', en:'Cow'}, {i:'🐷', th:'หมู', en:'Pig'}, {i:'🐥', th:'ลูกไก่', en:'Chick'}, {i:'🐴', th:'ม้า', en:'Horse'}, {i:'🐑', th:'แกะ', en:'Sheep'}, {i:'🐶', th:'สุนัข', en:'Dog'}, {i:'🦆', th:'เป็ด', en:'Duck'}] 
-            },
-            { 
-                nameTh: "ป่าดงดิบ 🦁", nameEn: "Wild Jungle 🦁", filename: "bg/jungle-bg.jpg", music: "music/jungle.mp3",
-                animals: [{i:'🦁', th:'สิงโต', en:'Lion'}, {i:'🐯', th:'เสือ', en:'Tiger'}, {i:'🐘', th:'ช้าง', en:'Elephant'}, {i:'🐵', th:'ลิง', en:'Monkey'}, {i:'🦒', th:'ยีราฟ', en:'Giraffe'}, {i:'🐍', th:'งู', en:'Snake'}, {i:'🐸', th:'กบ', en:'Frog'}] 
-            },
-            { 
-                nameTh: "หาดทรายและทะเล 🐬", nameEn: "Deep Sea 🐬", filename: "bg/ocean-bg.jpg", music: "music/ocean.mp3",
-                animals: [{i:'🐟', th:'ปลา', en:'Fish'}, {i:'🐙', th:'ปลาหมึก', en:'Octopus'}, {i:'🐬', th:'โลมา', en:'Dolphin'}, {i:'🦀', th:'ปู', en:'Crab'}, {i:'🐢', th:'เต่า', en:'Turtle'}, {i:'🐳', th:'วาฬ', en:'Whale'}, {i:'🦈', th:'ฉลาม', en:'Shark'}] 
-            },
-            { 
-                nameTh: "สวนดอกไม้และแมลง 🦋", nameEn: "Bug Garden 🦋", filename: "bg/garden-bg.jpg", music: "music/garden.mp3",
-                animals: [{i:'🦋', th:'ผีเสื้อ', en:'Butterfly'}, {i:'🐝', th:'ผึ้ง', en:'Bee'}, {i:'🐞', th:'เต่าทอง', en:'Ladybug'}, {i:'🐛', th:'หนอน', en:'Caterpillar'}, {i:'🐌', th:'หอยทาก', en:'Snail'}, {i:'🐜', th:'มด', en:'Ant'}, {i:'🦗', th:'ตั๊กแตน', en:'Grasshopper'}] 
-            },
-            { 
-                nameTh: "ขั้วโลกน้ำแข็ง 🐧", nameEn: "Polar World 🐧", filename: "bg/polar-bg.jpg", music: "music/polar.mp3",
-                animals: [{i:'🐧', th:'เพนกวิน', en:'Penguin'}, {i:'🐻‍❄️', th:'หมีขั้วโลก', en:'Polar Bear'}, {i:'🦭', th:'แมวน้ำ', en:'Seal'}, {i:'🦉', th:'นกฮูก', en:'Owl'}, {i:'🐺', th:'หมาป่า', en:'Wolf'}, {i:'🦊', th:'หมาจิ้งจอก', en:'Fox'}, {i:'🦌', th:'กวาง', en:'Deer'}] 
-            },
-            { 
-                nameTh: "โลกไดโนเสาร์ 🦖", nameEn: "Dino Land 🦖", filename: "bg/dino-bg.jpg", music: "music/dino.mp3",
-                animals: [{i:'🦖', th:'ทีเร็กซ์', en:'T-Rex'}, {i:'🦕', th:'คอยาว', en:'Dino'}, {i:'🐊', th:'จระเข้', en:'Crocodile'}, {i:'🦣', th:'แมมมอธ', en:'Mammoth'}, {i:'🦤', th:'นกโดโด', en:'Dodo'}, {i:'🦎', th:'กิ้งก่า', en:'Lizard'}, {i:'🦅', th:'นกอินทรี', en:'Eagle'}] 
-            }
+            { nameTh: "ฟาร์มแสนสนุก 🐄", nameEn: "Happy Farm 🐄", filename: "bg/farm-bg.jpg", music: "music/farm.mp3", animals: [{i:'🐮', th:'วัว', en:'Cow'}, {i:'🐷', th:'หมู', en:'Pig'}, {i:'🐥', th:'ลูกไก่', en:'Chick'}, {i:'🐴', th:'ม้า', en:'Horse'}, {i:'🐑', th:'แกะ', en:'Sheep'}, {i:'🐶', th:'สุนัข', en:'Dog'}, {i:'🦆', th:'เป็ด', en:'Duck'}] },
+            { nameTh: "ป่าดงดิบ 🦁", nameEn: "Wild Jungle 🦁", filename: "bg/jungle-bg.jpg", music: "music/jungle.mp3", animals: [{i:'🦁', th:'สิงโต', en:'Lion'}, {i:'🐯', th:'เสือ', en:'Tiger'}, {i:'🐘', th:'ช้าง', en:'Elephant'}, {i:'🐵', th:'ลิง', en:'Monkey'}, {i:'🦒', th:'ยีราฟ', en:'Giraffe'}, {i:'🐍', th:'งู', en:'Snake'}, {i:'🐸', th:'กบ', en:'Frog'}] },
+            { nameTh: "หาดทรายและทะเล 🐬", nameEn: "Deep Sea 🐬", filename: "bg/ocean-bg.jpg", music: "music/ocean.mp3", animals: [{i:'🐟', th:'ปลา', en:'Fish'}, {i:'🐙', th:'ปลาหมึก', en:'Octopus'}, {i:'🐬', th:'โลมา', en:'Dolphin'}, {i:'🦀', th:'ปู', en:'Crab'}, {i:'🐢', th:'เต่า', en:'Turtle'}, {i:'🐳', th:'วาฬ', en:'Whale'}, {i:'🦈', th:'ฉลาม', en:'Shark'}] },
+            { nameTh: "สวนดอกไม้และแมลง 🦋", nameEn: "Bug Garden 🦋", filename: "bg/garden-bg.jpg", music: "music/garden.mp3", animals: [{i:'🦋', th:'ผีเสื้อ', en:'Butterfly'}, {i:'🐝', th:'ผึ้ง', en:'Bee'}, {i:'🐞', th:'เต่าทอง', en:'Ladybug'}, {i:'🐛', th:'หนอน', en:'Caterpillar'}, {i:'🐌', th:'หอยทาก', en:'Snail'}, {i:'🐜', th:'มด', en:'Ant'}, {i:'🦗', th:'ตั๊กแตน', en:'Grasshopper'}] },
+            { nameTh: "ขั้วโลกน้ำแข็ง 🐧", nameEn: "Polar World 🐧", filename: "bg/polar-bg.jpg", music: "music/polar.mp3", animals: [{i:'🐧', th:'เพนกวิน', en:'Penguin'}, {i:'🐻‍❄️', th:'หมีขั้วโลก', en:'Polar Bear'}, {i:'🦭', th:'แมวน้ำ', en:'Seal'}, {i:'🦉', th:'นกฮูก', en:'Owl'}, {i:'🐺', th:'หมาป่า', en:'Wolf'}, {i:'🦊', th:'หมาจิ้งจอก', en:'Fox'}, {i:'🦌', th:'กวาง', en:'Deer'}] },
+            { nameTh: "โลกไดโนเสาร์ 🦖", nameEn: "Dino Land 🦖", filename: "bg/dino-bg.jpg", music: "music/dino.mp3", animals: [{i:'🦖', th:'ทีเร็กซ์', en:'T-Rex'}, {i:'🦕', th:'คอยาว', en:'Dino'}, {i:'🐊', th:'จระเข้', en:'Crocodile'}, {i:'🦣', th:'แมมมอธ', en:'Mammoth'}, {i:'🦤', th:'นกโดโด', en:'Dodo'}, {i:'🦎', th:'กิ้งก่า', en:'Lizard'}, {i:'🦅', th:'นกอินทรี', en:'Eagle'}] }
         ];
 
         stages.forEach(stage => { const img = new Image(); img.src = stage.filename; });
@@ -162,15 +136,10 @@
             startScreen.style.display = 'none'; 
             uiElements.forEach(el => el.style.display = 'block'); 
             isGameRunning = true;
-            
-            // เปิดใช้งานระบบ Web Audio ทันทีที่กดปุ่ม
             setupWebAudio();
-            
             let wakeup = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(wakeup);
-            
             checkStage(); 
-            
             setInterval(() => { 
                 if (bubbles.length < 8 && currentStageIndex !== -1 && isGameRunning) {
                     bubbles.push(new Bubble()); 
@@ -200,7 +169,6 @@
         function changeMusic(src) {
             if (bgmPlayer.src.includes(src)) return;
             bgmPlayer.src = src;
-            // ใส่เผื่อไว้สำหรับ Browser ธรรมดา
             bgmPlayer.volume = 0.25; 
             bgmPlayer.play().catch(e => console.log("รอเล่นเพลง"));
         }
@@ -263,7 +231,13 @@
                 ctx.strokeStyle = this.isRainbow ? `hsla(${this.hue}, 100%, 50%, 0.8)` : "rgba(255,255,255,0.3)";
                 ctx.lineWidth = this.isRainbow ? 4 : 1;
                 ctx.stroke();
-                ctx.font = `${this.radius * 0.7}px Arial`;
+
+                // ----------------------------------------------------
+                // --- จุดสำคัญที่แก้ไข: เพิ่ม "Apple Color Emoji" ---
+                // ----------------------------------------------------
+                ctx.font = `${this.radius * 0.7}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                // ----------------------------------------------------
+
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(this.animalData.i, 0, 0);
                 ctx.restore();
@@ -273,15 +247,12 @@
 
         function handlePop(x, y) {
             if (!isGameRunning) return; 
-
             for (let i = bubbles.length - 1; i >= 0; i--) {
                 const b = bubbles[i];
                 if (Math.hypot(b.x - x, b.y - y) < b.radius + 35) { 
                     const pColor = b.isRainbow ? `hsla(${b.hue}, 100%, 60%, 1)` : b.color;
                     for (let j = 0; j < 15; j++) particles.push(new Particle(b.x, b.y, pColor));
-                    
                     playSound((currentLang === 'th') ? b.animalData.th : b.animalData.en);
-                    
                     bubbles.splice(i, 1);
                     score++;
                     scoreDisplay.innerText = score;
@@ -290,20 +261,9 @@
                 }
             }
         }
-
         canvas.addEventListener('mousedown', (e) => handlePop(e.clientX, e.clientY));
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            Array.from(e.changedTouches).forEach(t => handlePop(t.clientX, t.clientY));
-        }, { passive: false });
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            bubbles.forEach((b, i) => { b.update(); b.draw(); if (b.y + b.radius < 0) bubbles.splice(i, 1); });
-            particles.forEach((p, i) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(i, 1); });
-            requestAnimationFrame(animate);
-        }
-
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); Array.from(e.changedTouches).forEach(t => handlePop(t.clientX, t.clientY)); }, { passive: false });
+        function animate() { ctx.clearRect(0, 0, canvas.width, canvas.height); bubbles.forEach((b, i) => { b.update(); b.draw(); if (b.y + b.radius < 0) bubbles.splice(i, 1); }); particles.forEach((p, i) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(i, 1); }); requestAnimationFrame(animate); }
         animate(); 
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
     </script>
