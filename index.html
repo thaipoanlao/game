@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Animal Bubble Pop v0.1.5</title>
+    <title>Animal Bubble Pop v0.1.6</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#87CEFA">
@@ -22,18 +22,16 @@
         }
         canvas { display: block; background: transparent; }
 
-        /* UI บนซ้าย - คะแนน */
         #ui-left {
             position: absolute; top: 20px; left: 20px; color: white;
             font-size: clamp(16px, 4vw, 24px); font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             background: rgba(0,0,0,0.2); padding: 8px 18px; border-radius: 25px;
-            pointer-events: none; z-index: 10; display: none; /* ซ่อนไว้ก่อนเริ่มเกม */
+            pointer-events: none; z-index: 10; display: none; 
         }
 
-        /* UI บนขวา - ปุ่มเปลี่ยนภาษา */
         #ui-right {
-            position: absolute; top: 20px; right: 20px; z-index: 20; display: none; /* ซ่อนไว้ก่อนเริ่มเกม */
+            position: absolute; top: 20px; right: 20px; z-index: 20; display: none; 
         }
         #lang-btn {
             background: #ffcf4b; border: 3px solid white; border-radius: 25px;
@@ -46,10 +44,9 @@
         #hint {
             position: absolute; bottom: 30px; width: 100%; text-align: center;
             color: white; font-size: clamp(20px, 5vw, 32px); font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6); pointer-events: none; display: none; /* ซ่อนไว้ก่อนเริ่มเกม */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6); pointer-events: none; display: none; 
         }
         
-        /* หน้าจอเริ่มเกม (Start Screen) */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, #87CEFA 0%, #a1c4fd 100%);
@@ -74,17 +71,13 @@
 <body>
     <div id="start-screen">
         <button id="start-btn">เริ่มเกม<br><span>Start Game</span></button>
-        <div class="version-tag">v 0.1.5</div>
+        <div class="version-tag">v 0.1.6</div>
     </div>
 
     <div id="ui-left"><span id="scoreText">สัตว์ที่เจอ</span>: <span id="scoreDisplay">0</span></div>
-    
-    <div id="ui-right">
-        <button id="lang-btn">TH / EN</button>
-    </div>
-
+    <div id="ui-right"><button id="lang-btn">TH / EN</button></div>
     <div id="hint">จิ้มเพื่อเริ่มสนุก!</div>
-    <div class="version-tag">v 0.1.5</div>
+    <div class="version-tag">v 0.1.6</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -97,7 +90,6 @@
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
         
-        // กลุ่ม UI ที่ต้องซ่อนก่อนเริ่มเกม
         const uiElements = [document.getElementById('ui-left'), document.getElementById('ui-right'), hintDisplay];
 
         canvas.width = window.innerWidth;
@@ -110,72 +102,75 @@
         let particles = [];
         let isGameRunning = false;
         
-        // ตั้งค่าระบบเสียงเพลง
+        // --- อัปเกรดระบบเสียงด้วย Web Audio API ---
         let bgmPlayer = new Audio();
         bgmPlayer.loop = true;
-        bgmPlayer.volume = 0.25; // ลดเสียงลงเหลือ 25% ตามความต้องการ
+        bgmPlayer.crossOrigin = "anonymous"; // ป้องกันปัญหาเวลาดึงไฟล์
+        
+        let audioCtx;
+        let gainNode;
+
+        function setupWebAudio() {
+            if (!audioCtx) {
+                // สร้างระบบเสียงขั้นสูง
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const track = audioCtx.createMediaElementSource(bgmPlayer);
+                gainNode = audioCtx.createGain();
+                
+                // บังคับระดับเสียงตรงนี้ (0.25 = 25%) 
+                gainNode.gain.value = 0.25; 
+                
+                // เชื่อมต่อสายเสียงเข้าด้วยกัน
+                track.connect(gainNode).connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        // ------------------------------------------
 
         const stages = [
             { 
                 nameTh: "ฟาร์มแสนสนุก 🐄", nameEn: "Happy Farm 🐄", filename: "bg/farm-bg.jpg", music: "music/farm.mp3",
-                animals: [
-                    {i:'🐮', th:'วัว', en:'Cow'}, {i:'🐷', th:'หมู', en:'Pig'}, {i:'🐥', th:'ลูกไก่', en:'Chick'},
-                    {i:'🐴', th:'ม้า', en:'Horse'}, {i:'🐑', th:'แกะ', en:'Sheep'}, {i:'🐶', th:'สุนัข', en:'Dog'}, {i:'🦆', th:'เป็ด', en:'Duck'}
-                ] 
+                animals: [{i:'🐮', th:'วัว', en:'Cow'}, {i:'🐷', th:'หมู', en:'Pig'}, {i:'🐥', th:'ลูกไก่', en:'Chick'}, {i:'🐴', th:'ม้า', en:'Horse'}, {i:'🐑', th:'แกะ', en:'Sheep'}, {i:'🐶', th:'สุนัข', en:'Dog'}, {i:'🦆', th:'เป็ด', en:'Duck'}] 
             },
             { 
                 nameTh: "ป่าดงดิบ 🦁", nameEn: "Wild Jungle 🦁", filename: "bg/jungle-bg.jpg", music: "music/jungle.mp3",
-                animals: [
-                    {i:'🦁', th:'สิงโต', en:'Lion'}, {i:'🐯', th:'เสือ', en:'Tiger'}, {i:'🐘', th:'ช้าง', en:'Elephant'},
-                    {i:'🐵', th:'ลิง', en:'Monkey'}, {i:'🦒', th:'ยีราฟ', en:'Giraffe'}, {i:'🐍', th:'งู', en:'Snake'}, {i:'🐸', th:'กบ', en:'Frog'}
-                ] 
+                animals: [{i:'🦁', th:'สิงโต', en:'Lion'}, {i:'🐯', th:'เสือ', en:'Tiger'}, {i:'🐘', th:'ช้าง', en:'Elephant'}, {i:'🐵', th:'ลิง', en:'Monkey'}, {i:'🦒', th:'ยีราฟ', en:'Giraffe'}, {i:'🐍', th:'งู', en:'Snake'}, {i:'🐸', th:'กบ', en:'Frog'}] 
             },
             { 
                 nameTh: "หาดทรายและทะเล 🐬", nameEn: "Deep Sea 🐬", filename: "bg/ocean-bg.jpg", music: "music/ocean.mp3",
-                animals: [
-                    {i:'🐟', th:'ปลา', en:'Fish'}, {i:'🐙', th:'ปลาหมึก', en:'Octopus'}, {i:'🐬', th:'โลมา', en:'Dolphin'},
-                    {i:'🦀', th:'ปู', en:'Crab'}, {i:'🐢', th:'เต่า', en:'Turtle'}, {i:'🐳', th:'วาฬ', en:'Whale'}, {i:'🦈', th:'ฉลาม', en:'Shark'}
-                ] 
+                animals: [{i:'🐟', th:'ปลา', en:'Fish'}, {i:'🐙', th:'ปลาหมึก', en:'Octopus'}, {i:'🐬', th:'โลมา', en:'Dolphin'}, {i:'🦀', th:'ปู', en:'Crab'}, {i:'🐢', th:'เต่า', en:'Turtle'}, {i:'🐳', th:'วาฬ', en:'Whale'}, {i:'🦈', th:'ฉลาม', en:'Shark'}] 
             },
             { 
                 nameTh: "สวนดอกไม้และแมลง 🦋", nameEn: "Bug Garden 🦋", filename: "bg/garden-bg.jpg", music: "music/garden.mp3",
-                animals: [
-                    {i:'🦋', th:'ผีเสื้อ', en:'Butterfly'}, {i:'🐝', th:'ผึ้ง', en:'Bee'}, {i:'🐞', th:'เต่าทอง', en:'Ladybug'},
-                    {i:'🐛', th:'หนอน', en:'Caterpillar'}, {i:'🐌', th:'หอยทาก', en:'Snail'}, {i:'🐜', th:'มด', en:'Ant'}, {i:'🦗', th:'ตั๊กแตน', en:'Grasshopper'}
-                ] 
+                animals: [{i:'🦋', th:'ผีเสื้อ', en:'Butterfly'}, {i:'🐝', th:'ผึ้ง', en:'Bee'}, {i:'🐞', th:'เต่าทอง', en:'Ladybug'}, {i:'🐛', th:'หนอน', en:'Caterpillar'}, {i:'🐌', th:'หอยทาก', en:'Snail'}, {i:'🐜', th:'มด', en:'Ant'}, {i:'🦗', th:'ตั๊กแตน', en:'Grasshopper'}] 
             },
             { 
                 nameTh: "ขั้วโลกน้ำแข็ง 🐧", nameEn: "Polar World 🐧", filename: "bg/polar-bg.jpg", music: "music/polar.mp3",
-                animals: [
-                    {i:'🐧', th:'เพนกวิน', en:'Penguin'}, {i:'🐻‍❄️', th:'หมีขั้วโลก', en:'Polar Bear'}, {i:'🦭', th:'แมวน้ำ', en:'Seal'},
-                    {i:'🦉', th:'นกฮูก', en:'Owl'}, {i:'🐺', th:'หมาป่า', en:'Wolf'}, {i:'🦊', th:'หมาจิ้งจอก', en:'Fox'}, {i:'🦌', th:'กวาง', en:'Deer'}
-                ] 
+                animals: [{i:'🐧', th:'เพนกวิน', en:'Penguin'}, {i:'🐻‍❄️', th:'หมีขั้วโลก', en:'Polar Bear'}, {i:'🦭', th:'แมวน้ำ', en:'Seal'}, {i:'🦉', th:'นกฮูก', en:'Owl'}, {i:'🐺', th:'หมาป่า', en:'Wolf'}, {i:'🦊', th:'หมาจิ้งจอก', en:'Fox'}, {i:'🦌', th:'กวาง', en:'Deer'}] 
             },
             { 
                 nameTh: "โลกไดโนเสาร์ 🦖", nameEn: "Dino Land 🦖", filename: "bg/dino-bg.jpg", music: "music/dino.mp3",
-                animals: [
-                    {i:'🦖', th:'ทีเร็กซ์', en:'T-Rex'}, {i:'🦕', th:'คอยาว', en:'Dino'}, {i:'🐊', th:'จระเข้', en:'Crocodile'},
-                    {i:'🦣', th:'แมมมอธ', en:'Mammoth'}, {i:'🦤', th:'นกโดโด', en:'Dodo'}, {i:'🦎', th:'กิ้งก่า', en:'Lizard'}, {i:'🦅', th:'นกอินทรี', en:'Eagle'}
-                ] 
+                animals: [{i:'🦖', th:'ทีเร็กซ์', en:'T-Rex'}, {i:'🦕', th:'คอยาว', en:'Dino'}, {i:'🐊', th:'จระเข้', en:'Crocodile'}, {i:'🦣', th:'แมมมอธ', en:'Mammoth'}, {i:'🦤', th:'นกโดโด', en:'Dodo'}, {i:'🦎', th:'กิ้งก่า', en:'Lizard'}, {i:'🦅', th:'นกอินทรี', en:'Eagle'}] 
             }
         ];
 
-        // พรีโหลดรูปภาพ
         stages.forEach(stage => { const img = new Image(); img.src = stage.filename; });
 
-        // ปุ่มเริ่มเกม
         startBtn.addEventListener('click', () => {
-            startScreen.style.display = 'none'; // ซ่อนหน้าเริ่มเกม
-            uiElements.forEach(el => el.style.display = 'block'); // แสดง UI
+            startScreen.style.display = 'none'; 
+            uiElements.forEach(el => el.style.display = 'block'); 
             isGameRunning = true;
             
-            // กระตุ้นระบบ SpeechSynthesis ให้ตื่น (แก้บั๊กเสียงไม่มาในลูกแรก)
+            // เปิดใช้งานระบบ Web Audio ทันทีที่กดปุ่ม
+            setupWebAudio();
+            
             let wakeup = new SpeechSynthesisUtterance('');
             window.speechSynthesis.speak(wakeup);
             
-            checkStage(); // โหลดด่านแรก
+            checkStage(); 
             
-            // เริ่มปล่อยลูกโป่ง
             setInterval(() => { 
                 if (bubbles.length < 8 && currentStageIndex !== -1 && isGameRunning) {
                     bubbles.push(new Bubble()); 
@@ -205,7 +200,9 @@
         function changeMusic(src) {
             if (bgmPlayer.src.includes(src)) return;
             bgmPlayer.src = src;
-            bgmPlayer.play().catch(e => console.log("รอการกดปุ่มเพื่อเล่นเพลง"));
+            // ใส่เผื่อไว้สำหรับ Browser ธรรมดา
+            bgmPlayer.volume = 0.25; 
+            bgmPlayer.play().catch(e => console.log("รอเล่นเพลง"));
         }
 
         function checkStage() {
@@ -275,7 +272,7 @@
         }
 
         function handlePop(x, y) {
-            if (!isGameRunning) return; // ไม่ให้จิ้มได้ถ้ายังไม่เริ่มเกม
+            if (!isGameRunning) return; 
 
             for (let i = bubbles.length - 1; i >= 0; i--) {
                 const b = bubbles[i];
@@ -307,8 +304,7 @@
             requestAnimationFrame(animate);
         }
 
-        animate(); // รัน animate ทิ้งไว้รอวาด แต่ยังไม่มีลูกโป่งจนกว่าจะกดเริ่มเกม
-        
+        animate(); 
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
     </script>
 </body>
