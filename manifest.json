@@ -1,0 +1,16 @@
+{
+  "name": "Animal Bubble Pop",
+  "short_name": "เฌอ Pop",
+  "description": "เกมจิ้มฟองสบู่สัตว์แสนสนุกสำหรับเฌอ",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#87CEFA",
+  "theme_color": "#87CEFA",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
