@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bubble Pop Animal Adventure - Image Background</title>
+    <title>Animal Bubble Pop Adventure</title>
     <style>
         body { 
             margin: 0; 
@@ -11,111 +11,205 @@
             touch-action: none; 
             user-select: none;
             font-family: 'Arial', sans-serif;
-
-            /* --- ส่วนสำคัญ: CSS สำหรับฉากหลัง --- */
-            background-color: #87CEFA; /* สีพื้นหลังสำรองหากโหลดภาพไม่สำเร็จ */
-            background-position: center; /* จัดภาพให้อยู่ตรงกลาง */
-            background-repeat: no-repeat; /* ไม่ให้ภาพซ้ำ */
-            background-size: cover; /* ขยายภาพให้เต็มพื้นที่โดยรักษาสัดส่วน */
-            transition: background-image 1.5s ease; /* ค่อยๆ เฟดภาพเมื่อเปลี่ยนด่าน */
+            background-color: #87CEFA;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            transition: background-image 1.2s ease-in-out; /* เฟดภาพนุ่มนวลเมื่อเปลี่ยนด่าน */
         }
-        canvas { display: block; background: transparent; } /* ให้ Canvas โปร่งใส */
+        canvas { display: block; background: transparent; }
         
         #ui-container {
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 20px;
+            left: 20px;
             color: white;
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 28px);
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
             pointer-events: none;
         }
         
         #hint {
             position: absolute;
-            bottom: 10px;
+            bottom: 20px;
             width: 100%;
             text-align: center;
             color: white;
-            font-size: 18px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: clamp(16px, 4vw, 22px);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
             pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <div id="ui-container">แต้ม: <span id="scoreDisplay">0</span></div>
-    <div id="hint">ฟาร์มแสนสนุก 🐄</div>
+    <div id="ui-container">สัตว์ที่เจอ: <span id="scoreDisplay">0</span></div>
+    <div id="hint" id="stageNameDisplay">เตรียมตัวสนุกกันเลย!</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
         const scoreDisplay = document.getElementById('scoreDisplay');
         const hintDisplay = document.getElementById('hint');
 
-        // --- ตั้งค่าข้อมูลด่านและไฟล์รูปภาพฉากหลัง ---
-        // *สำคัญ*: คุณต้องมีไฟล์รูปภาพเหล่านี้อยู่ในโฟลเดอร์เดียวกับไฟล์ HTML นี้*
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // --- ข้อมูลด่านทั้งหมด 6 ด่าน ---
         const stages = [
             {
                 name: "ฟาร์มแสนสนุก 🐄",
-                // แทนที่ด้วยชื่อไฟล์รูปภาพฟาร์มของคุณ
-                backgroundImage: "url('farm-bg.jpg')", 
-                animals: [ { icon: '🐮', label: 'วัว' }, { icon: '🐷', label: 'หมู' }, { icon: '🐥', label: 'ลูกไก่' } ]
+                bg: "url('farm-bg.jpg')",
+                animals: [{i:'🐮',l:'วัว'}, {i:'🐷',l:'หมู'}, {i:'🐥',l:'ลูกไก่'}, {i:'🐴',l:'ม้า'}, {i:'🐑',l:'แกะ'}]
             },
             {
                 name: "ป่าดงดิบ 🦁",
-                // แทนที่ด้วยชื่อไฟล์รูปภาพป่าของคุณ
-                backgroundImage: "url('jungle-bg.jpg')", 
-                animals: [ { icon: '🦁', label: 'สิงโต' }, { icon: '🐯', label: 'เสือ' }, { icon: '🐘', label: 'ช้าง' } ]
+                bg: "url('jungle-bg.jpg')",
+                animals: [{i:'🦁',l:'สิงโต'}, {i:'🐯',l:'เสือ'}, {i:'🐘',l:'ช้าง'}, {i:'🐵',l:'ลิง'}, {i:'🦒',l:'ยีราฟ'}]
             },
             {
                 name: "หาดทรายและทะเล 🐬",
-                // แทนที่ด้วยชื่อไฟล์รูปภาพทะเลของคุณ
-                backgroundImage: "url('ocean-bg.jpg')", 
-                animals: [ { icon: '🐟', label: 'ปลา' }, { icon: '🐙', label: 'ปลาหมึก' }, { icon: '🦀', label: 'ปู' } ]
+                bg: "url('ocean-bg.jpg')",
+                animals: [{i:'🐟',l:'ปลา'}, {i:'🐙',l:'ปลาหมึก'}, {i:'🦀',l:'ปู'}, {i:'🐬',l:'โลมา'}, {i:'🐢',l:'เต่า'}]
+            },
+            {
+                name: "สวนดอกไม้และแมลง 🦋",
+                bg: "url('garden-bg.jpg')",
+                animals: [{i:'🦋',l:'ผีเสื้อ'}, {i:'🐛',l:'หนอน'}, {i:'🐝',l:'ผึ้ง'}, {i:'🐞',l:'เต่าทอง'}, {i:'🐌',l:'หอยทาก'}, {i:'🐜',l:'มด'}]
+            },
+            {
+                name: "ขั้วโลกน้ำแข็ง 🐧",
+                bg: "url('polar-bg.jpg')",
+                animals: [{i:'🐧',l:'เพนกวิน'}, {i:'🐻‍❄️',l:'หมีขั้วโลก'}, {i:'🦭',l:'แมวน้ำ'}, {i:'🦉',l:'นกฮูกหิมะ'}, {i:'🐋',l:'วาฬ'}]
+            },
+            {
+                name: "โลกไดโนเสาร์ 🦖",
+                bg: "url('dino-bg.jpg')",
+                animals: [{i:'🦖',l:'ทีเร็กซ์'}, {i:'🦕',l:'ไดโนเสาร์คอยาว'}, {i:'🐊',l:'จระเข้'}, {i:'🐢',l:'เต่าโบราณ'}]
             }
         ];
 
         let score = 0;
-        let currentStageIndex = 0;
+        let currentStageIndex = -1; // เริ่มต้นที่ -1 เพื่อให้ trigger การเปลี่ยนด่านครั้งแรก
         let bubbles = [];
         let particles = [];
-
-        // กำหนดภาพฉากหลังเริ่มต้น
-        document.body.style.backgroundImage = stages[currentStageIndex].backgroundImage;
 
         function playSound(text) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'th-TH';
-            utterance.rate = 1.2;
+            utterance.rate = 1.1;
             window.speechSynthesis.speak(utterance);
         }
 
         function checkStage() {
-            const nextStage = Math.floor(score / 10) % stages.length; 
+            // เปลี่ยนด่านทุกๆ 10 แต้ม และวนลูปตามจำนวนด่านจริง
+            const stageToPoints = 10;
+            const nextIndex = Math.floor(score / stageToPoints) % stages.length;
             
-            if (nextStage !== currentStageIndex) {
-                currentStageIndex = nextStage;
-                // เปลี่ยนรูปภาพฉากหลังและข้อความ
-                document.body.style.backgroundImage = stages[currentStageIndex].backgroundImage;
-                hintDisplay.innerText = stages[currentStageIndex].name;
+            if (nextIndex !== currentStageIndex) {
+                currentStageIndex = nextIndex;
+                const stage = stages[currentStageIndex];
+                document.body.style.backgroundImage = stage.bg;
+                hintDisplay.innerText = stage.name;
+                
+                // แจ้งชื่อด่านใหม่ให้เด็กฟัง
+                playSound("ไปเที่ยว " + stage.name + " กันเถอะ");
             }
         }
 
-        // --- ส่วนโค้ด Particle, Bubble, interaction อื่นๆ เหมือนเดิม ---
-        class Particle { constructor(x,y,color){this.x=x;this.y=y;this.color=color;this.size=Math.random()*5+2;this.speedX=Math.random()*6-3;this.speedY=Math.random()*6-3;this.life=1.0;}update(){this.x+=this.speedX;this.y+=this.speedY;this.life-=0.05;}draw(){ctx.globalAlpha=this.life;ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1.0;}}
-        class Bubble { constructor(){this.radius=60+Math.random()*40;this.x=Math.random()*(canvas.width-this.radius*2)+this.radius;this.y=canvas.height+this.radius;this.speed=0.6+Math.random()*1.2;const currentAnimals=stages[currentStageIndex].animals;this.animal=currentAnimals[Math.floor(Math.random()*currentAnimals.length)];this.hue=Math.random()*360;this.color=`hsla(${this.hue},80%,70%,0.5)`;this.oscillation=0;}draw(){ctx.save();ctx.translate(this.x+Math.sin(this.oscillation)*15,this.y);const gradient=ctx.createRadialGradient(-this.radius/3,-this.radius/3,5,0,0,this.radius);gradient.addColorStop(0,'rgba(255,255,255,0.8)');gradient.addColorStop(1,this.color);ctx.beginPath();ctx.arc(0,0,this.radius,0,Math.PI*2);ctx.fillStyle=gradient;ctx.fill();ctx.strokeStyle="rgba(255,255,255,0.4)";ctx.stroke();ctx.font=`${this.radius*0.8}px Arial`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(this.animal.icon,0,0);ctx.restore();}update(){this.y-=this.speed;this.oscillation+=0.03;}}
-        function handlePop(x,y){for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];const dist=Math.hypot(b.x-x,b.y-y);if(dist<b.radius+30){for(let j=0;j<12;j++){particles.push(new Particle(b.x,b.y,b.color));}playSound(b.animal.label);bubbles.splice(i,1);score++;scoreDisplay.innerText=score;checkStage();break;}}}
-        canvas.addEventListener('mousedown',(e)=>handlePop(e.clientX,e.clientY));
-        canvas.addEventListener('touchstart',(e)=>{e.preventDefault();Array.from(e.changedTouches).forEach(touch=>{handlePop(touch.clientX,touch.clientY);});},{passive:false});
-        function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);bubbles.forEach((b,i)=>{b.update();b.draw();if(b.y+b.radius<0)bubbles.splice(i,1);});particles.forEach((p,i)=>{p.update();p.draw();if(p.life<=0)particles.splice(i,1);});requestAnimationFrame(animate);}
-        setInterval(()=>{if(bubbles.length<8)bubbles.push(new Bubble());},1500);
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = Math.random() * 6 - 3;
+                this.speedY = Math.random() * 6 - 3;
+                this.life = 1.0;
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; this.life -= 0.04; }
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        class Bubble {
+            constructor() {
+                this.radius = 65 + Math.random() * 35; // ใหญ่เพื่อให้จิ้มง่าย
+                this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                this.y = canvas.height + this.radius;
+                // ความเร็วต่ำสำหรับเด็ก 3 ขวบ
+                this.speed = 0.5 + Math.random() * 1.0; 
+                const currentAnimals = stages[currentStageIndex].animals;
+                this.animal = currentAnimals[Math.floor(Math.random() * currentAnimals.length)];
+                this.hue = Math.random() * 360;
+                this.color = `hsla(${this.hue}, 80%, 75%, 0.6)`;
+                this.oscillation = 0;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + Math.sin(this.oscillation) * 15, this.y);
+                
+                const grad = ctx.createRadialGradient(-this.radius/3, -this.radius/3, 5, 0, 0, this.radius);
+                grad.addColorStop(0, 'rgba(255,255,255,0.8)');
+                grad.addColorStop(1, this.color);
+                
+                ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad; ctx.fill();
+                ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.stroke();
+                
+                ctx.font = `${this.radius * 0.7}px Arial`;
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(this.animal.i, 0, 0);
+                ctx.restore();
+            }
+            update() { this.y -= this.speed; this.oscillation += 0.02; }
+        }
+
+        function handlePop(x, y) {
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                const dist = Math.hypot(b.x - x, b.y - y);
+                if (dist < b.radius + 35) { // พื้นที่จิ้มใจดีเป็นพิเศษ
+                    for (let j = 0; j < 12; j++) particles.push(new Particle(b.x, b.y, b.color));
+                    playSound(b.animal.l);
+                    bubbles.splice(i, 1);
+                    score++;
+                    scoreDisplay.innerText = score;
+                    checkStage();
+                    break;
+                }
+            }
+        }
+
+        // รองรับทั้งนิ้วมือและเมาส์
+        canvas.addEventListener('mousedown', (e) => handlePop(e.clientX, e.clientY));
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            Array.from(e.changedTouches).forEach(t => handlePop(t.clientX, t.clientY));
+        }, { passive: false });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bubbles.forEach((b, i) => { b.update(); b.draw(); if (b.y + b.radius < 0) bubbles.splice(i, 1); });
+            particles.forEach((p, i) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(i, 1); });
+            requestAnimationFrame(animate);
+        }
+
+        // เริ่มต้นเกม
+        checkStage();
+        setInterval(() => { if (bubbles.length < 7) bubbles.push(new Bubble()); }, 1800);
         animate();
-        window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 </body>
 </html>
