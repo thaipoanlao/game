@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Animal Bubble Pop v0.1.8</title>
+    <title>Animal Bubble Pop v0.1.9</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#87CEFA">
@@ -72,13 +72,13 @@
 <body>
     <div id="start-screen">
         <button id="start-btn">เริ่มเกม<br><span>Start Game</span></button>
-        <div class="version-tag">v 0.1.8</div>
+        <div class="version-tag">v 0.1.9</div>
     </div>
 
     <div id="ui-left"><span id="scoreText">สัตว์ที่เจอ</span>: <span id="scoreDisplay">0</span></div>
     <div id="ui-right"><button id="lang-btn">TH / EN</button></div>
     <div id="hint">จิ้มเพื่อเริ่มสนุก!</div>
-    <div class="version-tag">v 0.1.8</div>
+    <div class="version-tag">v 0.1.9</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -122,12 +122,13 @@
         }
 
         const stages = [
-            { nameTh: "ฟาร์มแสนสนุก 🐄", nameEn: "Happy Farm 🐄", filename: "bg/farm-bg.jpg", music: "music/farm.mp3", animals: [{i:'🐮', th:'วัว', en:'Cow'}, {i:'🐷', th:'หมู', en:'Pig'}, {i:'🐥', th:'ลูกไก่', en:'Chick'}, {i:'🐴', th:'ม้า', en:'Horse'}, {i:'🐑', th:'แกะ', en:'Sheep'}, {i:'🐶', th:'สุนัข', en:'Dog'}, {i:'🦆', th:'เป็ด', en:'Duck'}] },
-            { nameTh: "ป่าดงดิบ 🦁", nameEn: "Wild Jungle 🦁", filename: "bg/jungle-bg.jpg", music: "music/jungle.mp3", animals: [{i:'🦁', th:'สิงโต', en:'Lion'}, {i:'🐯', th:'เสือ', en:'Tiger'}, {i:'🐘', th:'ช้าง', en:'Elephant'}, {i:'🐵', th:'ลิง', en:'Monkey'}, {i:'🦒', th:'ยีราฟ', en:'Giraffe'}, {i:'🐍', th:'งู', en:'Snake'}, {i:'🐸', th:'กบ', en:'Frog'}] },
-            { nameTh: "หาดทรายและทะเล 🐬", nameEn: "Deep Sea 🐬", filename: "bg/ocean-bg.jpg", music: "music/ocean.mp3", animals: [{i:'🐟', th:'ปลา', en:'Fish'}, {i:'🐙', th:'ปลาหมึก', en:'Octopus'}, {i:'🐬', th:'โลมา', en:'Dolphin'}, {i:'🦀', th:'ปู', en:'Crab'}, {i:'🐢', th:'เต่า', en:'Turtle'}, {i:'🐳', th:'วาฬ', en:'Whale'}, {i:'🦈', th:'ฉลาม', en:'Shark'}] },
-            { nameTh: "สวนดอกไม้และแมลง 🦋", nameEn: "Bug Garden 🦋", filename: "bg/garden-bg.jpg", music: "music/garden.mp3", animals: [{i:'🦋', th:'ผีเสื้อ', en:'Butterfly'}, {i:'🐝', th:'ผึ้ง', en:'Bee'}, {i:'🐞', th:'เต่าทอง', en:'Ladybug'}, {i:'🐛', th:'หนอน', en:'Caterpillar'}, {i:'🐌', th:'หอยทาก', en:'Snail'}, {i:'🐜', th:'มด', en:'Ant'}, {i:'🦗', th:'ตั๊กแตน', en:'Grasshopper'}] },
-            { nameTh: "ขั้วโลกน้ำแข็ง 🐧", nameEn: "Polar World 🐧", filename: "bg/polar-bg.jpg", music: "music/polar.mp3", animals: [{i:'🐧', th:'เพนกวิน', en:'Penguin'}, {i:'🐻‍❄️', th:'หมีขั้วโลก', en:'Polar Bear'}, {i:'🦭', th:'แมวน้ำ', en:'Seal'}, {i:'🦉', th:'นกฮูก', en:'Owl'}, {i:'🐺', th:'หมาป่า', en:'Wolf'}, {i:'🦊', th:'หมาจิ้งจอก', en:'Fox'}, {i:'🦌', th:'กวาง', en:'Deer'}] },
-            { nameTh: "โลกไดโนเสาร์ 🦖", nameEn: "Dino Land 🦖", filename: "bg/dino-bg.jpg", music: "music/dino.mp3", animals: [{i:'🦖', th:'ทีเร็กซ์', en:'T-Rex'}, {i:'🦕', th:'คอยาว', en:'Dino'}, {i:'🐊', th:'จระเข้', en:'Crocodile'}, {i:'🦣', th:'แมมมอธ', en:'Mammoth'}, {i:'🦤', th:'นกโดโด', en:'Dodo'}, {i:'🦎', th:'กิ้งก่า', en:'Lizard'}, {i:'🦅', th:'นกอินทรี', en:'Eagle'}] }
+            // --- อัปเกรด: ระบุชื่อไฟล์รูปภาพสัตว์ (Animals filenames) ---
+            { nameTh: "ฟาร์มแสนสนุก 🐄", nameEn: "Happy Farm 🐄", filename: "bg/farm-bg.jpg", music: "music/farm.mp3", animals: [{f:'cow.png', th:'วัว', en:'Cow'}, {f:'pig.png', th:'หมู', en:'Pig'}, {f:'chick.png', th:'ลูกไก่', en:'Chick'}, {f:'horse.png', th:'ม้า', en:'Horse'}, {f:'sheep.png', th:'แกะ', en:'Sheep'}, {f:'dog.png', th:'สุนัข', en:'Dog'}, {f:'duck.png', th:'เป็ด', en:'Duck'}] },
+            { nameTh: "ป่าดงดิบ 🦁", nameEn: "Wild Jungle 🦁", filename: "bg/jungle-bg.jpg", music: "music/jungle.mp3", animals: [{f:'lion.png', th:'สิงโต', en:'Lion'}, {f:'tiger.png', th:'เสือ', en:'Tiger'}, {f:'elephant.png', th:'ช้าง', en:'Elephant'}, {f:'monkey.png', th:'ลิง', en:'Monkey'}, {f:'giraffe.png', th:'ยีราฟ', en:'Giraffe'}, {f:'snake.png', th:'งู', en:'Snake'}, {f:'frog.png', th:'กบ', en:'Frog'}] },
+            { nameTh: "หาดทรายและทะเล 🐬", nameEn: "Deep Sea 🐬", filename: "bg/ocean-bg.jpg", music: "music/ocean.mp3", animals: [{f:'fish.png', th:'ปลา', en:'Fish'}, {f:'octopus.png', th:'ปลาหมึก', en:'Octopus'}, {f:'dolphin.png', th:'โลมา', en:'Dolphin'}, {f:'crab.png', th:'ปู', en:'Crab'}, {f:'turtle.png', th:'เต่า', en:'Turtle'}, {f:'whale.png', th:'วาฬ', en:'Whale'}, {f:'shark.png', th:'ฉลาม', en:'Shark'}] },
+            { nameTh: "สวนดอกไม้และแมลง 🦋", nameEn: "Bug Garden 🦋", filename: "bg/garden-bg.jpg", music: "music/garden.mp3", animals: [{f:'butterfly.png', th:'ผีเสื้อ', en:'Butterfly'}, {f:'bee.png', th:'ผึ้ง', en:'Bee'}, {f:'ladybug.png', th:'เต่าทอง', en:'Ladybug'}, {f:'caterpillar.png', th:'หนอน', en:'Caterpillar'}, {f:'snail.png', th:'หอยทาก', en:'Snail'}, {f:'ant.png', th:'มด', en:'Ant'}, {f:'grasshopper.png', th:'ตั๊กแตน', en:'Grasshopper'}] },
+            { nameTh: "ขั้วโลกน้ำแข็ง 🐧", nameEn: "Polar World 🐧", filename: "bg/polar-bg.jpg", music: "music/polar.mp3", animals: [{f:'penguin.png', th:'เพนกวิน', en:'Penguin'}, {f:'polar-bear.png', th:'หมีขั้วโลก', en:'Polar Bear'}, {f:'seal.png', th:'แมวน้ำ', en:'Seal'}, {i:'OWL', f:'owl.png', th:'นกฮูก', en:'Owl'}, {f:'wolf.png', th:'หมาป่า', en:'Wolf'}, {f:'fox.png', th:'หมาจิ้งจอก', en:'Fox'}, {f:'deer.png', th:'กวาง', en:'Deer'}] },
+            { nameTh: "โลกไดโนเสาร์ 🦖", nameEn: "Dino Land 🦖", filename: "bg/dino-bg.jpg", music: "music/dino.mp3", animals: [{f:'trex.png', th:'ทีเร็กซ์', en:'T-Rex'}, {f:'dino.png', th:'ไดโนเสาร์', en:'Dino'}, {f:'crocodile.png', th:'จระเข้', en:'Crocodile'}, {f:'mammoth.png', th:'แมมมอธ', en:'Mammoth'}, {f:'dodo.png', th:'นกโดโด', en:'Dodo'}, {f:'lizard.png', th:'กิ้งก่า', en:'Lizard'}, {f:'eagle.png', th:'นกอินทรี', en:'Eagle'}] }
         ];
 
         stages.forEach(stage => { const img = new Image(); img.src = stage.filename; });
@@ -159,16 +160,12 @@
             }
         }
 
-        // ----------------------------------------------------
-        // --- จุดที่แก้ไข: ปรับความเร็วเสียงพูดภาษาไทยเป็น 1.1 ---
-        // ----------------------------------------------------
         function playSound(text) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = (currentLang === 'th') ? 'th-TH' : 'en-US';
             utterance.rate = (currentLang === 'th') ? 1.1 : 1.0; 
             window.speechSynthesis.speak(utterance);
         }
-        // ----------------------------------------------------
 
         function changeMusic(src) {
             if (bgmPlayer.src.includes(src)) return;
@@ -221,6 +218,16 @@
                 this.animalData = currentAnimals[Math.floor(Math.random() * currentAnimals.length)];
                 this.hue = Math.random() * 360;
                 this.oscillation = 0;
+
+                // ----------------------------------------------------
+                // --- จุดสำคัญที่แก้ไข (v0.1.9): โหลดรูปภาพสัตว์ ---
+                // ----------------------------------------------------
+                this.animalImage = new Image();
+                // คุณต้องเตรียมไฟล์ .png ไว้ในโฟลเดอร์ animals/
+                this.animalImage.src = 'animals/' + this.animalData.f; 
+                this.isImageLoaded = false;
+                this.animalImage.onload = () => { this.isImageLoaded = true; };
+                // ----------------------------------------------------
             }
             draw() {
                 ctx.save();
@@ -236,9 +243,15 @@
                 ctx.lineWidth = this.isRainbow ? 4 : 1;
                 ctx.stroke();
 
-                ctx.font = `${this.radius * 0.7}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(this.animalData.i, 0, 0);
+                // ----------------------------------------------------
+                // --- จุดสำคัญที่แก้ไข (v0.1.9): วาดรูปภาพสัตว์ ---
+                // ----------------------------------------------------
+                if (this.isImageLoaded) {
+                    const imgSize = this.radius * 1.3; // ปรับขนาดรูปสัตว์ให้พอดีลูกโป่ง
+                    ctx.drawImage(this.animalImage, -imgSize/2, -imgSize/2, imgSize, imgSize);
+                }
+                // ----------------------------------------------------
+
                 ctx.restore();
             }
             update() { this.y -= this.speed; this.oscillation += 0.03; }
