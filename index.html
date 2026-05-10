@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Animal Bubble Pop v0.1.7</title>
+    <title>Animal Bubble Pop v0.1.8</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#87CEFA">
@@ -16,7 +16,7 @@
     <style>
         body { 
             margin: 0; overflow: hidden; touch-action: none; user-select: none;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* ฟอนต์ระบบ */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: #87CEFA;
             background-position: center; background-repeat: no-repeat; background-size: cover;
             transition: background-image 1.2s ease-in-out; 
@@ -72,13 +72,13 @@
 <body>
     <div id="start-screen">
         <button id="start-btn">เริ่มเกม<br><span>Start Game</span></button>
-        <div class="version-tag">v 0.1.7</div>
+        <div class="version-tag">v 0.1.8</div>
     </div>
 
     <div id="ui-left"><span id="scoreText">สัตว์ที่เจอ</span>: <span id="scoreDisplay">0</span></div>
     <div id="ui-right"><button id="lang-btn">TH / EN</button></div>
     <div id="hint">จิ้มเพื่อเริ่มสนุก!</div>
-    <div class="version-tag">v 0.1.7</div>
+    <div class="version-tag">v 0.1.8</div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
@@ -159,12 +159,16 @@
             }
         }
 
+        // ----------------------------------------------------
+        // --- จุดที่แก้ไข: ปรับความเร็วเสียงพูดภาษาไทยเป็น 1.1 ---
+        // ----------------------------------------------------
         function playSound(text) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = (currentLang === 'th') ? 'th-TH' : 'en-US';
-            utterance.rate = (currentLang === 'th') ? 1.3 : 1.0; 
+            utterance.rate = (currentLang === 'th') ? 1.1 : 1.0; 
             window.speechSynthesis.speak(utterance);
         }
+        // ----------------------------------------------------
 
         function changeMusic(src) {
             if (bgmPlayer.src.includes(src)) return;
@@ -232,12 +236,7 @@
                 ctx.lineWidth = this.isRainbow ? 4 : 1;
                 ctx.stroke();
 
-                // ----------------------------------------------------
-                // --- จุดสำคัญที่แก้ไข: เพิ่ม "Apple Color Emoji" ---
-                // ----------------------------------------------------
                 ctx.font = `${this.radius * 0.7}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
-                // ----------------------------------------------------
-
                 ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(this.animalData.i, 0, 0);
                 ctx.restore();
